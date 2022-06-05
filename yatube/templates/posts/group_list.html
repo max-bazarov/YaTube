@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}
+  Записи сообщества {{ group.title }}
+{% endblock title %}
+{% block content %}
+  {% load cache %}
+  <h1>{{ group.title }}</h1>
+  <p>{{ group.description|linebreaksbr }}</p>
+  {% cache 20 group_list with page_obj %}
+  {% for post in page_obj %}
+    {% include 'includes/article_card.html' %}
+  {% endfor %}
+{% endcache %}
+{% include 'posts/includes/paginator.html' %}
+{% endblock content %}
