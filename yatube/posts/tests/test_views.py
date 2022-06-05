@@ -257,8 +257,9 @@ class PostsPagesTest(TestCase):
                     kwargs={
                         'username': PostsPagesTest.user_following.username}),
         )
-        self.assertFalse(Follow.objects.filter(user=PostsPagesTest.user).filter(
-            author=PostsPagesTest.user_following).exists())
+        self.assertFalse(
+            Follow.objects.filter(user=PostsPagesTest.user).filter(
+                author=PostsPagesTest.user_following).exists())
 
     def test_author_post_appears_at_followers(self):
         self.authorized_client.get(

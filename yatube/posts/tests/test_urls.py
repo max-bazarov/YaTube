@@ -82,7 +82,7 @@ class PostsURLTest(TestCase):
         response = self.guest_client.get(
             f'/profile/{PostsURLTest.user.username}/unfollow/')
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-    
+
     def test_follow_url_available_to_authorized_client(self):
         response = self.authorized_client.get(
             f'/profile/{PostsURLTest.user.username}/follow/')

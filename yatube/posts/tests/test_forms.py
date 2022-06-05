@@ -100,4 +100,4 @@ class PostFormTest(TestCase):
             data=form_data,
             follow=True
         )
-        self.assertEqual(Comment.objects.count(), comments_count+1)
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
