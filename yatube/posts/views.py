@@ -36,9 +36,9 @@ def group_posts(request, slug):
 def profile(request, username):
     following = False
     author = User.objects.get(username=username)
-
-    if Follow.objects.filter(author=author).filter(user=request.user).exists():
-        following = True
+    if request.user.is_authenticated:
+        if Follow.objects.filter(author=author).filter(user=request.user).exists():
+            following = True
 
     user_posts = author.posts.select_related('author', 'group').all()
     page_number = request.GET.get('page')
@@ -139,7 +139,8 @@ def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user == author:
         return redirect('posts:profile', request.user.username)
-
+    if Follow.objects.filter(user=request.user).filter(author=author).exists():
+        return redirect('posts:profile', username)
     Follow.objects.create(user=request.user, author=author)
     return redirect('posts:follow_index')
 
