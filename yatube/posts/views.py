@@ -36,8 +36,10 @@ def group_posts(request, slug):
 def profile(request, username):
     following = False
     author = User.objects.get(username=username)
+
     if request.user.is_authenticated:
-        if Follow.objects.filter(author=author).filter(user=request.user).exists():
+        if Follow.objects.filter(author=author).filter(
+                user=request.user).exists():
             following = True
 
     user_posts = author.posts.select_related('author', 'group').all()
