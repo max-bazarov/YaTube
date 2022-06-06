@@ -12,8 +12,7 @@ POSTS_PER_PAGE = 10
 
 def index(request):
     post_list = Post.objects.select_related('group', 'author').all()
-    page_number = request.GET.get('page')
-    page_obj = get_paginator_page_obj(post_list, POSTS_PER_PAGE, page_number)
+    page_obj = get_paginator_page_obj(request, post_list, POSTS_PER_PAGE)
     context = {
         'page_obj': page_obj,
     }
@@ -23,8 +22,7 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.select_related('group', 'author').all()
-    page_number = request.GET.get('page')
-    page_obj = get_paginator_page_obj(posts, POSTS_PER_PAGE, page_number)
+    page_obj = get_paginator_page_obj(request, posts, POSTS_PER_PAGE)
 
     context = {
         'group': group,
@@ -43,8 +41,7 @@ def profile(request, username):
             following = True
 
     user_posts = author.posts.select_related('author', 'group').all()
-    page_number = request.GET.get('page')
-    page_obj = get_paginator_page_obj(user_posts, POSTS_PER_PAGE, page_number)
+    page_obj = get_paginator_page_obj(request, user_posts, POSTS_PER_PAGE)
 
     context = {
         'following': following,
@@ -57,16 +54,11 @@ def profile(request, username):
 def post_detail(request, post_id):
     post = get_object_or_404(
         Post.objects.select_related('group', 'author'), pk=post_id)
-    comments = post.comments.select_related('author', 'post').all()
-    is_author = False
+    comments = post.comments.select_related('author').all()
+    is_author = request.user == post.author
 
-    if post.author == request.user:
-        is_author = True
+    form = CommentForm()
 
-    form = CommentForm(request.POST or None)
-
-    if form.is_valid():
-        form.save()
     context = {'post': post,
                'is_author': is_author,
                'form': form,
@@ -88,6 +80,7 @@ def post_create(request):
                   {'form': form, 'is_edit': is_edit})
 
 
+@login_required
 def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     is_edit = True
@@ -126,8 +119,7 @@ def follow_index(request):
     post_list = Post.objects.select_related(
         'group', 'author').filter(author__following__user=request.user).all()
 
-    page_number = request.GET.get('page')
-    page_obj = get_paginator_page_obj(post_list, POSTS_PER_PAGE, page_number)
+    page_obj = get_paginator_page_obj(request, post_list, POSTS_PER_PAGE)
 
     context = {
         'page_obj': page_obj,

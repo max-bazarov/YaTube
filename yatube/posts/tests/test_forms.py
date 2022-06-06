@@ -89,7 +89,7 @@ class PostFormTest(TestCase):
             Post.objects.filter(text=form_data.get('text')).exists()
         )
 
-    def test_add_post(self):
+    def test_add_comment(self):
         comments_count = Comment.objects.count()
         form_data = {
             'text': 'Новый комментарий'

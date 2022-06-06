@@ -11,7 +11,7 @@ class PostsURLTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='test_user')
-
+        cls.user_not_author = User.objects.create_user(username='not_author')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test-slug',
@@ -26,6 +26,8 @@ class PostsURLTest(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(PostsURLTest.user)
+        self.not_author = Client()
+        self.not_author.force_login(PostsURLTest.user_not_author)
 
     def test_static_url(self):
         response = self.guest_client.get('/')
@@ -50,6 +52,11 @@ class PostsURLTest(TestCase):
         response = self.authorized_client.get(
             f'/posts/{PostsURLTest.post.id}/edit/')
         self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_post_edit_url_redirects_authorized_not_author(self):
+        response = self.not_author.get(
+            f'/posts/{PostsURLTest.post.id}/edit/')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_post_edit_url_redirects_anonymous_on_post_detail(self):
         response = self.guest_client.get(
