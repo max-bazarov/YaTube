@@ -4,7 +4,7 @@
   {% load cache %}
   {% cache 20 follow_page with page_obj %}
   {% for post in page_obj %}
-    {% include 'includes/article_card.html' with show_group_link=True %}
+    {% include 'posts/includes/article_card.html' with show_group_link=True %}
   {% endfor %}
 {% endcache %}
 {% include 'posts/includes/paginator.html' %}

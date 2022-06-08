@@ -52,24 +52,14 @@ class PostsPagesTest(TestCase):
         ]
         Post.objects.bulk_create(posts)
 
-        # cls.small_gif = (
-        #     b'\x47\x49\x46\x38\x39\x61\x02\x00'
-        #     b'\x01\x00\x80\x00\x00\x00\x00\x00'
-        #     b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-        #     b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-        #     b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-        #     b'\x0A\x00\x3B'
-        # )
-        # cls.uploaded = SimpleUploadedFile(
-        #     name='small.gif',
-        #     content=cls.small_gif,
-        #     content_type='image/gif'
-        # )
-        # cls.image_form_data = {
-        #     'text': 'Пост с картинкой',
-        #     'group': cls.group.id,
-        #     'image': cls.uploaded,
-        # }
+        cls.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -187,24 +177,17 @@ class PostsPagesTest(TestCase):
         self.assertNotIn(PostsPagesTest.post, response.context['page_obj'])
 
     def test_post_with_image_show_correct_context(self):
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
         uploaded = SimpleUploadedFile(
             name='small.gif',
-            content=small_gif,
+            content=PostsPagesTest.small_gif,
             content_type='image/gif'
         )
-        image_form_data = {
-            'text': 'Пост с картинкой',
-            'group': PostsPagesTest.group.id,
-            'image': uploaded,
-        }
+        Post.objects.create(
+            text='Пост с картинкой',
+            group=PostsPagesTest.group,
+            author=PostsPagesTest.user,
+            image=uploaded
+        )
         reverse_urls = [
             reverse('posts:index'),
             reverse('posts:profile', kwargs={
@@ -214,11 +197,6 @@ class PostsPagesTest(TestCase):
                 'slug': PostsPagesTest.group.slug
             }),
         ]
-        self.authorized_client.post(
-            reverse('posts:post_create'),
-            data=image_form_data,
-            follow=True,
-        )
         for url in reverse_urls:
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
@@ -226,34 +204,21 @@ class PostsPagesTest(TestCase):
                 self.assertEqual(post_image, 'posts/small.gif')
 
     def test_post_detail_with_image_show_correct_context(self):
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
         uploaded = SimpleUploadedFile(
             name='small1.gif',
-            content=small_gif,
+            content=PostsPagesTest.small_gif,
             content_type='image/gif'
         )
-        image_form_data = {
-            'text': 'Пост с картинкой',
-            'group': PostsPagesTest.group.id,
-            'image': uploaded,
-        }
-        self.authorized_client.post(
-            reverse('posts:post_create'),
-            data=image_form_data,
-            follow=True,
+        post = Post.objects.create(
+            text='Пост с картинкой',
+            group=PostsPagesTest.group,
+            author=PostsPagesTest.user,
+            image=uploaded
         )
         post_detail_response = self.authorized_client.get(reverse(
             'posts:post_detail',
             kwargs={
-                'post_id': Post.objects.get(
-                    text=image_form_data.get('text')).id}))
+                'post_id': post.id}))
         post_detail_image = post_detail_response.context['post'].image
         self.assertEqual(post_detail_image, 'posts/small1.gif')
 
@@ -309,29 +274,21 @@ class PostsPagesTest(TestCase):
                 'posts:profile_follow',
                 kwargs={'username': PostsPagesTest.user_following.username}),
         )
-        form_data = {
-            'text': 'Author post'
-        }
-        self.author_client.post(
-            reverse('posts:post_create'),
-            data=form_data,
-            follow=True,
+        post = Post.objects.create(
+            text='Author post',
+            author=PostsPagesTest.user_following,
         )
         response_user_with_follows = self.authorized_client.get(
             reverse('posts:follow_index'))
-        self.assertIn(Post.objects.get(text=form_data.get('text')),
+        self.assertIn(post,
                       response_user_with_follows.context['page_obj'])
 
     def test_author_post_not_appears_at_non_followers(self):
-        form_data = {
-            'text': 'Author post'
-        }
-        self.author_client.post(
-            reverse('posts:post_create'),
-            data=form_data,
-            follow=True,
+        post = Post.objects.create(
+            text='Author post',
+            author=PostsPagesTest.user_following,
         )
         response_user_with_no_follows = self.user_no_follows.get(
             reverse('posts:follow_index'))
-        self.assertNotIn(Post.objects.get(text=form_data.get(
-            'text')), response_user_with_no_follows.context['page_obj'])
+        self.assertNotIn(post,
+                         response_user_with_no_follows.context['page_obj'])

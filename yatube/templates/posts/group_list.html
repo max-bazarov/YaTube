@@ -8,7 +8,7 @@
   <p>{{ group.description|linebreaksbr }}</p>
   {% cache 20 group_list with page_obj %}
   {% for post in page_obj %}
-    {% include 'includes/article_card.html' %}
+    {% include 'posts/includes/article_card.html' %}
   {% endfor %}
 {% endcache %}
 {% include 'posts/includes/paginator.html' %}
