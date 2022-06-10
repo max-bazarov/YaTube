@@ -223,18 +223,15 @@ class PostsPagesTest(TestCase):
         self.assertEqual(post_detail_image, 'posts/small1.gif')
 
     def test_index_page_cache(self):
-        form_data = {
-            'text': 'Cache post'
-        }
-        self.authorized_client.post(
-            reverse('posts:post_create'),
-            data=form_data,
-            follow=True,
+        post = Post.objects.create(
+            text='Cache post',
+            author=PostsPagesTest.user,
+            group=PostsPagesTest.group
         )
         cache.clear()
         response_before_delete = self.authorized_client.get(
             reverse('posts:index'))
-        Post.objects.get(text=form_data.get('text')).delete()
+        post.delete()
         response_after_delete = self.authorized_client.get(
             reverse('posts:index'))
         self.assertEqual(response_before_delete.content,
