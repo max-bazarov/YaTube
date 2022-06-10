@@ -11,13 +11,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'qwjr_38t4hm0nsjm1c2v+iw@bo2iz0e9z&)7#)+bggbvnm+2^q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '[::1]',
     'testserver',
+    'www.digitalSpaghetti.pythonanywhere.com',
+    'digitalSpaghetti.pythonanywhere.com',
 ]
 
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'posts.apps.PostsConfig',
     'users.apps.UsersConfig',
     'core.apps.CoreConfig',
